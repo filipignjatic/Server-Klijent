@@ -8,27 +8,57 @@
 
 void doprocessing (int sock)
 {
-	/*lokalne promenljive*/
-	int n;
+	double n, p;
+	char *prvi, *znak, *drugi;
+	double rez;
+	double br1, br2;
+	int set = 0;
+	int gre = 0;
 	char buffer[256];
-	char sendBuf[256];
-	char tempstr[256];
-	bzero(buffer,256);
-	int done = 0;
-	while (!done)
+	while(!set)
 	{
+		bzero(buffer,256);
 		n = read(sock,buffer,255);
-		buffer[n] = 0;
-		//terminiraj string primljen od strane klijenta
-		if (strcmp(buffer,"quit") == 0)
+		if (n < 0)
+			printf("Error reading from port");
+		prvi = strtok(buffer," ");
+    		znak = strtok(NULL," ");
+     		drugi = strtok(NULL," ");
+		br1 = atof(prvi);
+		br2 = atof(drugi);
+     		if (strcmp(znak,"+") == 0)
 		{
-			done = 1;
-			printf("Client closed connection..\n");
+     			rez = br1+br2;
+			printf("Primljeno: %.2f + %.2f \nRezultat: %.2f \n\n", br1, br2, rez); 
+			gre = 0;
 		}
-		else
+     		else if (strcmp(znak,"-") == 0)
 		{
-			printf("Received: %s\n",buffer);
+     			rez = br1-br2;
+			printf("Primljeno: %.2f - %.2f \nRezultat: %.2f \n\n", br1, br2, rez);
+			gre = 0;
 		}
+     		else if (strcmp(znak,"*") == 0)
+		{     		
+			rez = br1*br2;
+			printf("Primljeno: %.2f * %.2f \nRezultat: %.2f \n\n", br1, br2, rez); 
+			gre = 0;
+		}
+     		else if (strcmp(znak,"/") == 0)
+		{     		
+			rez = br1/br2;
+			printf("Primljeno: %.2f / %.2f \nRezultat: %.2f \n\n", br1, br2, rez); 
+			gre = 0;
+		}
+     		else
+     		{
+     			printf("Klijent je uneo pogresan znak...\n\n");
+			gre = 1;
+     		}	
+     		n = write(sock,&rez,sizeof(rez));
+		p = write(sock,&gre, sizeof(gre));
+     		if (n < 0)
+			printf("ERROR writing to socket");	
 	}
 	close(sock);
 }
@@ -57,13 +87,13 @@ int main( int argc, char *argv[] )
 		perror("ERROR on binding");
 		exit(1);
 	}
-	printf("Server started.. waiting for clients ...\n");
+	printf("Server je pokrenut! Cekaju se klijenti...\n");
 	listen(sockfd,5);
 	clilen = sizeof(cli_addr);
 	while (1)
 	{ 
 		newsockfd = accept(sockfd,(struct sockaddr *) &cli_addr, &clilen);
-		printf("Client connected...\n");
+		printf("Klijent se konektovao...\n\n");
 		if (newsockfd < 0)
 		{
 			perror("ERROR on accept");
@@ -78,8 +108,8 @@ int main( int argc, char *argv[] )
 		}
 		if (pid == 0) 
 		{
-			close(sockfd);
 			doprocessing(newsockfd);
+			close(sockfd);		
 			exit(0);
 		}
 		else
