@@ -13,10 +13,12 @@ int main(int argc, char *argv[])
 {
 	int sockfd = 0;
 	struct sockaddr_in serv_addr;
-	int done;
+	int set, gre;
 	char * line = NULL;
 	size_t len = 0;
 	int nread;
+	double rez;
+	double n, p;
 	if(argc != 2)
 	{
 		printf("\n Usage: %s <ip of server> \n",argv[0]);
@@ -44,21 +46,31 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 
-	printf("Connected to server... Send message to server, or type 'quit' to exit\n");
+	printf("-------Uspesno ste se konekotvali na server!-------\n Posaljite poruku serveru npr: 3 + 2 ili upisite 'izadji' za izlaz\n\n\nPoruka: ");
 
-	done = 0;
-	while (!done)
+	set = 0;
+	while (!set)
 	{
 		nread=getline(&line, &len, stdin);
 		nread--;
 		line[nread] ='\0';
-		if (strcmp(line,"quit") == 0)
+		if (strcmp(line,"izadji") == 0)
 		{
-			done = 1;
-			printf("Closing connection with the server..\n");
+			set = 1;
+			printf("Prekinuta konekcija sa serverom!\n");
+			return -1;
 		}
-		/* posalji poruku serveru */
 		write (sockfd, line, strlen(line));
+		n = read(sockfd,&rez,sizeof(rez));
+		p = read(sockfd,&gre, sizeof(gre));
+		if(gre == 0)
+		{
+			printf("Rezultat: %.2f\nPoruka: ",rez);
+		}
+		else 
+		{
+			printf("Pogresno unet znak !\nDozvoljene operacije su: [ + - * / ] !!!\nPoruka: ");
+		}	
 	}
 	close(sockfd);
 	return 0;
