@@ -58,16 +58,15 @@ int main(int argc, char *argv[])
 		{
 			set = 1;
 			printf("Prekinuta konekcija sa serverom!\n");
-			return -1;
 		}
 		write (sockfd, line, strlen(line));
 		n = read(sockfd,&rez,sizeof(rez));
 		p = read(sockfd,&gre, sizeof(gre));
-		if(gre == 0)
+		if(gre == 0 && !set)
 		{
 			printf("Rezultat: %.2f\nPoruka: ",rez);
 		}
-		else 
+		else if (gre == 1 && !set)
 		{
 			printf("Pogresno unet znak !\nDozvoljene operacije su: [ + - * / ] !!!\nPoruka: ");
 		}	
